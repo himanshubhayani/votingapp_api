@@ -4789,11 +4789,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\a_gateway group\\votingapp_api\\VotingApp.Tests\\VotingApp.Tests.csproj",
+      "projectUniqueName": "D:\\a_git_gateway\\votingapp_api\\VotingApp.Tests\\VotingApp.Tests.csproj",
       "projectName": "VotingApp.Tests",
-      "projectPath": "D:\\a_gateway group\\votingapp_api\\VotingApp.Tests\\VotingApp.Tests.csproj",
+      "projectPath": "D:\\a_git_gateway\\votingapp_api\\VotingApp.Tests\\VotingApp.Tests.csproj",
       "packagesPath": "C:\\Users\\Dell\\.nuget\\packages\\",
-      "outputPath": "D:\\a_gateway group\\votingapp_api\\VotingApp.Tests\\obj\\",
+      "outputPath": "D:\\a_git_gateway\\votingapp_api\\VotingApp.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
@@ -4814,8 +4814,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\a_gateway group\\votingapp_api\\votingapp\\votingapp.csproj": {
-              "projectPath": "D:\\a_gateway group\\votingapp_api\\votingapp\\votingapp.csproj"
+            "D:\\a_git_gateway\\votingapp_api\\votingapp\\votingapp.csproj": {
+              "projectPath": "D:\\a_git_gateway\\votingapp_api\\votingapp\\votingapp.csproj"
             }
           }
         }

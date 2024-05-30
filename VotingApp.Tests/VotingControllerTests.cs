@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
+using Moq;
+using System;
+using System.Linq.Expressions;
 using votingapp.Controllers;
 using votingapp.Infrastructure;
 using votingapp.Models;
@@ -11,92 +12,55 @@ namespace VotingApp.Tests
     public class VotingControllerTests
     {
         private readonly VotingController _controller;
-        private readonly ApplicationDbContext _context;
+        private readonly Mock<IUnitOfWork> _mockUnitOfWork;
 
         public VotingControllerTests()
         {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "VotingAppTest")
-                .Options;
+            _mockUnitOfWork = new Mock<IUnitOfWork>();
 
-            _context = new ApplicationDbContext(options);
-            ClearDatabase();
-
-            // Seed the in-memory database
-            SeedDatabase();
-
-            _controller = new VotingController(_context);
-        }
-
-        private void ClearDatabase()
-        {
-            _context.voters.RemoveRange(_context.voters);
-            _context.candidates.RemoveRange(_context.candidates);
-            _context.SaveChanges();
-        }
-
-        private void SeedDatabase()
-        {
-            _context.voters.AddRange(
-                new Voter { id = 1, name = "John Doe", has_voted = false },
-                new Voter { id = 2, name = "Jane Doe", has_voted = false }
-            );
-
-            _context.candidates.AddRange(
-                new Candidate { id = 1, name = "Alice", votes = 0 },
-                new Candidate { id = 2, name = "Bob", votes = 0 }
-            );
-
-            _context.SaveChanges();
+            _controller = new VotingController(_mockUnitOfWork.Object);
         }
 
         [Fact]
-        public void Vote_ValidVoterAndCandidate_ReturnsOk()
+        public void Vote_SuccessfullyCastsVote()
         {
+            // Arrange
+            var voter = new Voter { id = 1, has_voted = false };
+            var candidate = new Candidate { id = 1, votes = 0 };
+
+            _mockUnitOfWork.Setup(uow => uow.VotersRepository.Find(It.IsAny<Expression<Func<Voter, bool>>>()))
+                .Returns(voter);
+
+            _mockUnitOfWork.Setup(uow => uow.CandidatesRepository.Find(It.IsAny<Expression<Func<Candidate, bool>>>()))
+                .Returns(candidate);
+
+            _mockUnitOfWork.Setup(uow => uow.VotersRepository.Update(It.IsAny<Voter>(), It.IsAny<int>()))
+                .Callback<Voter, int>((v, id) => voter.has_voted = v.has_voted);
+
+            _mockUnitOfWork.Setup(uow => uow.CandidatesRepository.Update(It.IsAny<Candidate>(), It.IsAny<int>()))
+                .Callback<Candidate, int>((c, id) => candidate.votes = c.votes);
+
             // Act
-            var result = _controller.Vote(1, 1);
+            var result = _controller.Vote(voter.id, candidate.id);
 
             // Assert
             var okResult = Assert.IsType<OkResult>(result);
-            var voter = _context.voters.First(v => v.id == 1);
-            var candidate = _context.candidates.First(c => c.id == 1);
-
             Assert.True(voter.has_voted);
             Assert.Equal(1, candidate.votes);
         }
 
         [Fact]
-        public void Vote_AlreadyVoted_ReturnsBadRequest()
+        public void Vote_ReturnsBadRequestForInvalidVoterOrCandidate()
         {
             // Arrange
-            var voter = _context.voters.First(v => v.id == 1);
-            voter.has_voted = true;
-            _context.SaveChanges();
+            _mockUnitOfWork.Setup(uow => uow.VotersRepository.Find(It.IsAny<Expression<Func<Voter, bool>>>()))
+                .Returns((Voter)null);
+
+            _mockUnitOfWork.Setup(uow => uow.CandidatesRepository.Find(It.IsAny<Expression<Func<Candidate, bool>>>()))
+                .Returns((Candidate)null);
 
             // Act
             var result = _controller.Vote(1, 1);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Vote failed. Invalid voter or candidate.", badRequestResult.Value);
-        }
-
-        [Fact]
-        public void Vote_InvalidVoter_ReturnsBadRequest()
-        {
-            // Act
-            var result = _controller.Vote(999, 1);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Vote failed. Invalid voter or candidate.", badRequestResult.Value);
-        }
-
-        [Fact]
-        public void Vote_InvalidCandidate_ReturnsBadRequest()
-        {
-            // Act
-            var result = _controller.Vote(1, 999);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);

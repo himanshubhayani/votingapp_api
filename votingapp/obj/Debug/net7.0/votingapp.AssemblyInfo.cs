@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("votingapp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+711f0d9ce20e034b5372450652ee18bee73a63f3")]
 [assembly: System.Reflection.AssemblyProductAttribute("votingapp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("votingapp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

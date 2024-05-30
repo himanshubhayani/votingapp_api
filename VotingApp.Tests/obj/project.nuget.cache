@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "yfjZfvJAVA//62Bsr7sN90+LC2mxH33Ptim4rCl+0m3bFq3C3phuR/3+cdVbYyEy1PmG5ZgqSGtdKmqM+AdTnw==",
+  "dgSpecHash": "DV9wRvBeXjVSMt7pgOmTsFwU/vDowO+l/iw6qyD0jdT1mKewjiMC11avvmBeCthfbkCDR5koRe5dZfboMsGzvg==",
   "success": true,
-  "projectFilePath": "D:\\a_gateway group\\votingapp_api\\VotingApp.Tests\\VotingApp.Tests.csproj",
+  "projectFilePath": "D:\\a_git_gateway\\votingapp_api\\VotingApp.Tests\\VotingApp.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Dell\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\Dell\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",

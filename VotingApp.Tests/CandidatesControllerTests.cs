@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Moq;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using votingapp.Controllers;
 using votingapp.Infrastructure;
@@ -13,28 +12,28 @@ namespace VotingApp.Tests
     public class CandidatesControllerTests
     {
         private readonly CandidatesController _controller;
-        private readonly ApplicationDbContext _context;
+        private readonly Mock<IUnitOfWork> _mockUnitOfWork;
 
         public CandidatesControllerTests()
         {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "VotingAppTest")
-                .Options;
+            _mockUnitOfWork = new Mock<IUnitOfWork>();
 
-            _context = new ApplicationDbContext(options);
+            // Mock the repository methods
+            _mockUnitOfWork.Setup(uow => uow.CandidatesRepository.GetAllAsyncList())
+                .ReturnsAsync(new List<Candidate>
+                {
+                    new Candidate { id = 1, name = "Alice", votes = 0 },
+                    new Candidate { id = 2, name = "Bob", votes = 0 }
+                });
 
-            // Clear the database before each test
-            _context.Database.EnsureDeleted();
-            _context.Database.EnsureCreated();
+            _mockUnitOfWork.Setup(uow => uow.CandidatesRepository.AddAsync(It.IsAny<Candidate>()))
+                .Returns<Candidate>(candidate =>
+                {
+                    candidate.id = 3; // Simulate setting the id after adding
+                    return Task.FromResult(candidate);
+                });
 
-            // Seed the in-memory database
-            _context.candidates.AddRange(
-                new Candidate { id = 1, name = "Alice", votes = 0 },
-                new Candidate { id = 2, name = "Bob", votes = 0 }
-            );
-            _context.SaveChanges();
-
-            _controller = new CandidatesController(_context);
+            _controller = new CandidatesController(_mockUnitOfWork.Object);
         }
 
         [Fact]
@@ -55,7 +54,7 @@ namespace VotingApp.Tests
         public async Task AddCandidate_ReturnsCreatedCandidate()
         {
             // Arrange
-            var candidate = new Candidate { name = "Charlie", votes = 0 }; // Do not set id
+            var candidate = new Candidate { name = "Charlie", votes = 0 };
 
             // Act
             var result = await _controller.AddCandidate(candidate);

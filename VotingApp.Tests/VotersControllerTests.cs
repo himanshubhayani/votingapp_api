@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Moq;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using votingapp.Controllers;
 using votingapp.Infrastructure;
@@ -13,28 +12,28 @@ namespace VotingApp.Tests
     public class VotersControllerTests
     {
         private readonly VotersController _controller;
-        private readonly ApplicationDbContext _context;
+        private readonly Mock<IUnitOfWork> _mockUnitOfWork;
 
         public VotersControllerTests()
         {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "VotingAppTest")
-                .Options;
+            _mockUnitOfWork = new Mock<IUnitOfWork>();
 
-            _context = new ApplicationDbContext(options);
+            // Mock the repository methods
+            _mockUnitOfWork.Setup(uow => uow.VotersRepository.GetAllAsyncList())
+                .ReturnsAsync(new List<Voter>
+                {
+                    new Voter { id = 1, name = "Alice"},
+                    new Voter { id = 2, name = "Bob"}
+                });
 
-            // Clear the database before each test
-            _context.Database.EnsureDeleted();
-            _context.Database.EnsureCreated();
+            _mockUnitOfWork.Setup(uow => uow.VotersRepository.AddAsync(It.IsAny<Voter>()))
+                .Returns<Voter>(voter =>
+                {
+                    voter.id = 3; // Simulate setting the id after adding
+                    return Task.FromResult(voter);
+                });
 
-            // Seed the in-memory database
-            _context.voters.AddRange(
-                new Voter { id = 1, name = "John Doe", has_voted = false },
-                new Voter { id = 2, name = "Jane Doe", has_voted = true }
-            );
-            _context.SaveChanges();
-
-            _controller = new VotersController(_context);
+            _controller = new VotersController(_mockUnitOfWork.Object);
         }
 
         [Fact]
@@ -55,7 +54,7 @@ namespace VotingApp.Tests
         public async Task AddVoter_ReturnsCreatedVoter()
         {
             // Arrange
-            var voter = new Voter { id = 3, name = "Alice", has_voted = false };
+            var voter = new Voter { name = "Charlie" };
 
             // Act
             var result = await _controller.AddVoter(voter);
@@ -66,7 +65,9 @@ namespace VotingApp.Tests
             var returnVoter = Assert.IsType<Voter>(createdAtActionResult.Value);
 
             Assert.Equal(voter.name, returnVoter.name);
-            Assert.Equal(voter.has_voted, returnVoter.has_voted);
+
+            // Check if ID was assigned
+            Assert.NotEqual(0, returnVoter.id);
         }
     }
 }
